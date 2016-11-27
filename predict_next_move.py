@@ -72,9 +72,19 @@ def predict_best_move(board_dimention, winner_line_size, trained_model_file, pla
     return predict_best_move_low_level(game_spec, create_network_func, trained_model_file, player, board_state)
 
 
-board_state = [[1, 0, 0, 0], 
-               [0, -1, 0, 0], 
-               [0, 0, 0, 0],
-               [0, -1, 0, 0]]
-next_move = predict_best_move(4, 3, 'trained_4x4_3', -1, board_state)
+board_state = [[1, 0, 0 ], 
+               [1, -1, 0 ], 
+               [0, 0, 0 ]]
+
+next_move = predict_best_move(3, 3, 'trained_3x3', -1, board_state)
+print(board_state)
+print(next_move)
+
+
+board_state = [[1, 0, 0 ], 
+               [1, -1, 0 ], 
+               [0, 0, 0 ]]
+
+next_move = predict_best_move(3, 3, 'trained_3x3', -1, board_state)
+print(board_state)
 print(next_move)
