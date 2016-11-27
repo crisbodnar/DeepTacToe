@@ -37,7 +37,7 @@ function createBoard() {
     /* parse the string that represents our playing board to an array */
     board = (JSON.parse(localStorage.getItem('tic-tac-toe-board')));
     for (var i = 0; i < board.length; i++) {
-      if (board[i] != "") {
+      if (board[i] != "_") {
         fillSquareWithMarker(document.getElementById(i), board[i]);
       }
     }
@@ -48,6 +48,10 @@ function createBoard() {
       board[i] = "_";
       document.getElementById(i).innerHTML = "";
     }
+  }
+  for(var i = 0; i < board.length; i++){
+    var square = document.getElementById(i.toString());
+    square.className = "";
   }
 }
 
@@ -69,9 +73,10 @@ function squareSelected(square, currentPlayer) {
         jsonp: 'jsonp_callback',
         data: board.toString(),
         success: function(result) {
+        if(result != "-1"){
           square_id = result;
           setTimeout(function(){
-          squareSelectedByNetwork(square_id)}, 500);
+          squareSelectedByNetwork(square_id)}, 500);}
         },
         error: function(err) {
           console.log(board.toString());
@@ -83,9 +88,12 @@ function squareSelected(square, currentPlayer) {
 }
 
 function squareSelectedByNetwork(square_id){
+    var square = document.getElementById(square_id);
+    if(square.className.match(/marker/))
+        return;
+
     switchPlayers();
     var currentPlayer = getCurrentPlayer();
-    var square = document.getElementById(square_id);
     fillSquareWithMarker(square, currentPlayer);
     updateBoard(square.id, currentPlayer);
     checkForWinner();
@@ -119,14 +127,13 @@ function updateBoard(index, marker) {
   6 7 8
 */
 function declareWinner() {
-  alert("We have a winner!  New game?")
+  alert("We have a winner!  Hint: it's not you!");
   newGame();
 }
 
 function weHaveAWinner(a, b, c) {
 
-  if ((board[a] === board[b]) && (board[b] === board[c]) && (board[a] != "_" || board[b] != "_" || board[c] != "_")) {
-    console.log("entered if");
+  if ((board[a] === board[b]) && (board[b] === board[c]) && (board[a] != "_")) {
     declareWinner();
     return true;
   }
@@ -136,6 +143,7 @@ function weHaveAWinner(a, b, c) {
 
 function checkForWinner() {
   /* check rows */
+  console.log(board);
   var a = 0; var b = 1; var c = 2;
   while (c < board.length) {
     if (weHaveAWinner(a, b, c)) {
@@ -164,9 +172,8 @@ function checkForWinner() {
 
   /* if there's no winner but the board is full, ask the user if they want to start a new game */
   if (!JSON.stringify(board).match(/,"_",/)) {
-    if (confirm("It's a draw. New game?")) {
-      newGame();
-    }
+    alert("It's a draw !");
+    newGame();
   }
 }
 
@@ -220,7 +227,8 @@ function newGame() {
   localStorage.removeItem('last-player');
 
   /* create a new game */
-  createBoard();
+  setTimeout(function(){
+  createBoard()},500);
 }
 
 

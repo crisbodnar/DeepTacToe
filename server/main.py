@@ -23,12 +23,16 @@ def sendNetworkData():
                 config_array[index]=1
             else:
                 config_array[index]=2
-            print(config_array[index])
+            print(index, " ", config_array[index])
             index+=1
+    print(config_array)
     response = c1.choose_next_move(config_array)
 
     print(response)
-    return str(response)
+    if(response >= 0):
+        return str(response)
+    else:
+        return str(-1)
 
 if __name__ == '__main__':
     c1 = Game(3, 3, 3)
