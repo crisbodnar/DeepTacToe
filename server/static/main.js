@@ -45,7 +45,7 @@ function createBoard() {
   /* otherwise, create a clean board */
   else {
     for (var i = 0; i < board.length; i++) {
-      board[i] = "";
+      board[i] = "_";
       document.getElementById(i).innerHTML = "";
     }
   }
@@ -63,20 +63,18 @@ function squareSelected(square, currentPlayer) {
     fillSquareWithMarker(square, currentPlayer);
     updateBoard(square.id, currentPlayer);
     checkForWinner();
-    var gameBoard = { boardID : JSON.stringify(board) };
       $.ajax({
         type: 'POST',
         url: '/sendNetworkData',
-        dataType: 'json',
         jsonp: 'jsonp_callback',
-        data: gameBoard,
+        data: board.toString(),
         success: function(result) {
           square_id = result;
-          console.log(board);
-          console.log(gameBoard);
-          squareSelectedByNetwork(square_id);
+          setTimeout(function(){
+          squareSelectedByNetwork(square_id)}, 500);
         },
         error: function(err) {
+          console.log(board.toString());
           console.log("Error")
           console.log(err);
         }
@@ -121,14 +119,15 @@ function updateBoard(index, marker) {
   6 7 8
 */
 function declareWinner() {
-  if (confirm("We have a winner!  New game?")) {
-    newGame();
-  }
+  alert("We have a winner!  New game?")
+  newGame();
 }
 
 function weHaveAWinner(a, b, c) {
-  if ((board[a] === board[b]) && (board[b] === board[c]) && (board[a] != "" || board[b] != "" || board[c] != "")) {
-    setTimeout(declareWinner(), 100);
+
+  if ((board[a] === board[b]) && (board[b] === board[c]) && (board[a] != "_" || board[b] != "_" || board[c] != "_")) {
+    console.log("entered if");
+    declareWinner();
     return true;
   }
   else
@@ -164,7 +163,7 @@ function checkForWinner() {
   }
 
   /* if there's no winner but the board is full, ask the user if they want to start a new game */
-  if (!JSON.stringify(board).match(/,"",/)) {
+  if (!JSON.stringify(board).match(/,"_",/)) {
     if (confirm("It's a draw. New game?")) {
       newGame();
     }
