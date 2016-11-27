@@ -65,10 +65,6 @@ class Game:
 
 	# choose a random position to start
 	def start_game(self):
-		row = randint(0, self.no_of_rows - 1)
-		column = randint(0, self.no_of_columns - 1)
-		self.board[row][column] = 1
-
 		#initialize the arrays
 		#benefit is high if the configuration is good for player 1
 		#and low if the configuration is good for player 2
@@ -76,21 +72,23 @@ class Game:
 		#visited is one if the configuration has been computed
 		self.visited = [0 for x in range(100000)]
 
-		#self.powers_of_3[row * self.no_of_columns + column] is the value of the current configuration
-		play_game(self, 2, self.powers_of_3[row * self.no_of_columns + column])
+		play_game(self, 1, 0)
 
 	#respond to server request
 	def choose_next_move(self, config_array):
 		current_state = matrix_from_array(config_array)
 		configuration = configuration_from_array(config_array)
-		best_configuration = 999999999
-		
+		best_configuration = 19682
+		best_value = 3
+
 		for i in range(3):
 			for j in range(3):
 				if (current_state[i][j] == 0):
 					new_configuration = configuration + 2 * self.powers_of_3[i * 3 + j]
-					if (self.benefit[new_configuration] < best_configuration):
+					print(self.benefit[new_configuration])
+					if (self.benefit[new_configuration] <= best_value):
 						best_configuration = new_configuration
+						best_value = self.benefit[new_configuration]
 		return best_configuration
 		
 
@@ -101,6 +99,9 @@ def matrix_from_array(config_array):
 		for j in range(3):
 			Matrix[i][j] = config_array[array_index]
 			array_index += 1
+			print(Matrix[i][j], end = "")
+		print()
+	print()
 	return Matrix
 
 def configuration_from_array(config_array):
@@ -112,12 +113,11 @@ def configuration_from_array(config_array):
 	return configuration
 
 def matrix_from_configuration(configuration):
-	print(configuration)
 	Matrix = [[0 for x in range(3)] for y in range(3)]
 	for i in range(3):
 		for j in range(3):
 			Matrix[i][j] = configuration % 3
-			configuration = int(configuration / 3)
+			configuration = configuration // 3
 			print(Matrix[i][j], end = "")
 		print()
 	return Matrix
@@ -126,12 +126,14 @@ def matrix_from_configuration(configuration):
 def min_between(a, b):
 	if a < b:
 		return a
-	return b
+	else:
+		return b
 
 def max_between(a, b):
 	if a > b:
 		return a
-	return b
+	else:
+		return b
 
 def initialize_board(no_of_rows, no_of_columns): 
 	Matrix = [[0 for x in range(no_of_columns)] for y in range(no_of_rows)]
@@ -145,68 +147,69 @@ def initialize_powers_of_3(maximum):
 	return pow3
 
 #fill the benefit array
-def play_game(current_object, move, configuration):	
-	current_object.visited[configuration] = 1
+def play_game(current_game, move, configuration):	
+	current_game.visited[configuration] = 1
 
 	if (detect_player(move) == 1):
-		current_object.benefit[configuration] = 1
+		current_game.benefit[configuration] = 1
 	else:
-		current_object.benefit[configuration] = 3
+		current_game.benefit[configuration] = 3
 
-	if (check_end_of_game(current_object) == 1):
+	if (check_end_of_game(current_game) == 1):
 		return
 
-	if (move == current_object.get_number_of_rows() * current_object.get_number_of_columns() + 1):
-		current_object.benefit[configuration] = 2 #equality
-		print()
+	if (move == 10):
+		current_game.benefit[configuration] = 2 #equality
+		return
 
 	#go through all states which derive from the current one
 	#and update the value of benefit
-	for i in range(current_object.no_of_rows):
-		for j in range(current_object.no_of_columns):
-			if (current_object.board[i][j] == 0):
+	for i in range(current_game.no_of_rows):
+		for j in range(current_game.no_of_columns):
+			if (current_game.board[i][j] == 0):
 				if (detect_player(move) == 1):
-					current_object.board[i][j] = 1
-					new_configuration = configuration + current_object.powers_of_3[i * current_object.get_number_of_columns() + j]
-					if current_object.visited[new_configuration] == 0:
-						play_game(current_object, move + 1, new_configuration)
+					current_game.board[i][j] = 1
+					new_configuration = configuration + current_game.powers_of_3[i * 3 + j]
+					if current_game.visited[new_configuration] == 0:
+						play_game(current_game, move + 1, new_configuration)
 					#maximize the result
-					current_object.benefit[configuration] = max_between(current_object.benefit[configuration], current_object.benefit[new_configuration])
-					current_object.board[i][j] = 0
+					current_game.benefit[configuration] = max_between(current_game.benefit[configuration], current_game.benefit[new_configuration])
+					current_game.board[i][j] = 0
 				else:
-					current_object.board[i][j] = 2
-					new_configuration = configuration + 2 * current_object.powers_of_3[i * current_object.get_number_of_columns() + j]
-					if current_object.visited[new_configuration] == 0:
-						play_game(current_object, move + 1, new_configuration)
+					current_game.board[i][j] = 2
+					new_configuration = configuration + 2 * current_game.powers_of_3[i * 3 + j]
+					if current_game.visited[new_configuration] == 0:
+						play_game(current_game, move + 1, new_configuration)
 					#minimize the result
-					current_object.benefit[configuration] = min_between(current_object.benefit[configuration], current_object.benefit[new_configuration])
-					current_object.board[i][j] = 0
+					current_game.benefit[configuration] = min_between(current_game.benefit[configuration], current_game.benefit[new_configuration])
+					current_game.board[i][j] = 0
 
 def detect_player(move):
 	if move % 2 == 1:
 		return 1
-	return 2
+	else:
+		return 2
 
-def check_end_of_game(current_object):
+def check_end_of_game(current_game):
 	#works for 3*3 board
 
-	if (current_object.board[0][0] == 1 and current_object.board[1][1] == 1 and current_object.board[2][2] == 1):
+	if (current_game.board[0][0] == 1 and current_game.board[1][1] == 1 and current_game.board[2][2] == 1):
 		return 1
-	if (current_object.board[2][0] == 1 and current_object.board[1][1] == 1 and current_object.board[0][2] == 1):
+	if (current_game.board[2][0] == 1 and current_game.board[1][1] == 1 and current_game.board[0][2] == 1):
 		return 1
-	if (current_object.board[0][0] == 2 and current_object.board[1][1] == 2 and current_object.board[2][2] == 2):
+	if (current_game.board[0][0] == 2 and current_game.board[1][1] == 2 and current_game.board[2][2] == 2):
 		return 1
-	if (current_object.board[2][0] == 2 and current_object.board[1][1] == 2 and current_object.board[0][2] == 2):
+	if (current_game.board[2][0] == 2 and current_game.board[1][1] == 2 and current_game.board[0][2] == 2):
 		return 1
 
 	for i in range(3):
-		if(current_object.board[i][0] == 1 and current_object.board[i][1] == 1 and current_object.board[i][2] == 1):
+		if(current_game.board[i][0] == 1 and current_game.board[i][1] == 1 and current_game.board[i][2] == 1):
 			return 1
-		if(current_object.board[0][i] == 1 and current_object.board[1][i] == 1 and current_object.board[2][i] == 1): 
+		if(current_game.board[0][i] == 1 and current_game.board[1][i] == 1 and current_game.board[2][i] == 1): 
 			return 1
-		if(current_object.board[i][0] == 2 and current_object.board[i][1] == 2 and current_object.board[i][2] == 2): 
+		if(current_game.board[i][0] == 2 and current_game.board[i][1] == 2 and current_game.board[i][2] == 2): 
 			return 1
-		if(current_object.board[0][i] == 2 and current_object.board[1][i] == 2 and current_object.board[2][i] == 2): 
+		if(current_game.board[0][i] == 2 and current_game.board[1][i] == 2 and current_game.board[2][i] == 2): 
 			return 1
 
 	return 0
@@ -214,6 +217,8 @@ def check_end_of_game(current_object):
 
 c1 = Game(3, 3, 3)
 c1.start_game()
+
+"""
 print(c1.choose_next_move([1, 2, 1, 0, 0, 0, 0, 0, 0]))
 
 matrix_from_configuration(c1.choose_next_move([1, 2, 0,
@@ -228,3 +233,8 @@ print()
 matrix_from_configuration(c1.choose_next_move([1, 0, 2,
 											   0, 0, 0, 
 											   1, 1, 2]))
+print()
+matrix_from_configuration(c1.choose_next_move([1, 0, 2,
+											   0, 1, 0, 
+											   0, 1, 2]))
+"""
