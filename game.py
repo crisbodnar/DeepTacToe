@@ -80,16 +80,20 @@ class Game:
 		configuration = configuration_from_array(config_array)
 		best_configuration = 19682
 		best_value = 10
+		best_i = -1
+		best_j = -1
 
 		for i in range(3):
 			for j in range(3):
 				if (current_state[i][j] == 0):
 					new_configuration = configuration + 2 * self.powers_of_3[i * 3 + j]
-					print(self.benefit[new_configuration])
 					if (self.benefit[new_configuration] <= best_value):
 						best_configuration = new_configuration
 						best_value = self.benefit[new_configuration]
-		return best_configuration
+						best_i = i
+						best_j = j	
+		return best_i * 3 + best_j
+		#return best_configuration
 		
 
 def matrix_from_array(config_array):
@@ -99,9 +103,9 @@ def matrix_from_array(config_array):
 		for j in range(3):
 			Matrix[i][j] = config_array[array_index]
 			array_index += 1
-			print(Matrix[i][j], end = "")
-		print()
-	print()
+			#print(Matrix[i][j], end = "")
+		#print()
+	#print()
 	return Matrix
 
 def configuration_from_array(config_array):
@@ -214,19 +218,23 @@ def is_end_of_game(current_game):
 
 	return False
 
-
+"""
 c1 = Game(3, 3, 3)
 c1.start_game()
 
-"""
-matrix_from_configuration(c1.choose_next_move([1, 2, 0,
-											   1, 0, 0, 
-											   0, 0, 0]))
+
+print(c1.choose_next_move([1, 2, 0,
+					  1, 0, 0, 
+	                  0, 0, 0]))
 print()
 
-matrix_from_configuration(c1.choose_next_move([1, 2, 1,
+
+
+print(c1.choose_next_move([1, 2, 1,
 											   1, 2, 0, 
-											   0, 0, 0]))
+	
+										   0, 0, 0]))
+
 print()
 matrix_from_configuration(c1.choose_next_move([1, 0, 2,
 											   0, 0, 0, 
