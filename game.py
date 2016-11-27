@@ -27,6 +27,7 @@ class Game:
 		self.winning_length = winning_length
 		#Initialize a board of the given size
 		self.board = initialize_board(no_of_rows, no_of_columns)
+		#encode the states as base 3 values
 		self.powers_of_3 = initialize_powers_of_3(no_of_rows * no_of_columns)
 
 
@@ -51,7 +52,7 @@ class Game:
 	def print_board(self):
 		for i in range(self.no_of_rows):
 			for j in range(self.no_of_columns):
-				print(self.board[i][j], end='')
+				print(self.board[i][j], end = '')
 			print()
 
 	def print_powers_of_3(self):
@@ -62,31 +63,63 @@ class Game:
 		for i in range(100):
 			print(self.benefit[i])
 
+	# choose a random position to start
 	def start_game(self):
 		row = randint(0, self.no_of_rows - 1)
 		column = randint(0, self.no_of_columns - 1)
 		self.board[row][column] = 1
 
-		self.benefit = [0 for x in range(100000000)]
-		self.visited = [0 for x in range(100000000)]
+		#initialize the arrays
+		#benefit is high if the configuration is good for player 1
+		#and low if the configuration is good for player 2
+		self.benefit = [0 for x in range(100000)]
+		#visited is one if the configuration has been computed
+		self.visited = [0 for x in range(100000)]
 
-		#self.powers_of_3[row * self.no_of_columns + column] is the current configuration
+		#self.powers_of_3[row * self.no_of_columns + column] is the value of the current configuration
 		play_game(self, 2, self.powers_of_3[row * self.no_of_columns + column])
 
-	def choose_next_move(self, configuration):
-		current_state = matrix_from_configuration(configuration)
+	#respond to server request
+	def choose_next_move(self, config_array):
+		current_state = matrix_from_array(config_array)
+		configuration = configuration_from_array(config_array)
+		best_configuration = 999999999
+		
+		for i in range(3):
+			for j in range(3):
+				if (current_state[i][j] == 0):
+					new_configuration = configuration + 2 * self.powers_of_3[i * 3 + j]
+					if (self.benefit[new_configuration] < best_configuration):
+						best_configuration = new_configuration
+		return best_configuration
+		
+
+def matrix_from_array(config_array):
+	Matrix = [[0 for x in range(3)] for y in range(3)]
+	array_index = 0
+	for i in range(3):
+		for j in range(3):
+			Matrix[i][j] = config_array[array_index]
+			array_index += 1
+	return Matrix
+
+def configuration_from_array(config_array):
+	configuration = 0
+	pow_of_3 = 1
+	for i in range(9):
+		configuration = configuration + config_array[i] * pow_of_3
+		pow_of_3 *= 3
+	return configuration
 
 def matrix_from_configuration(configuration):
+	print(configuration)
 	Matrix = [[0 for x in range(3)] for y in range(3)]
-	row = 2
-	column = 2
-	while (configuration > 0):
-		Matrix[row][column] = configuration % 10
-		configuration /= 10
-		column -= 1
-		if (column == -1):
-			row -= 1
-			column = 2
+	for i in range(3):
+		for j in range(3):
+			Matrix[i][j] = configuration % 3
+			configuration = int(configuration / 3)
+			print(Matrix[i][j], end = "")
+		print()
 	return Matrix
 
 
@@ -111,33 +144,24 @@ def initialize_powers_of_3(maximum):
 		pow3[i] = pow3[i-1] * 3
 	return pow3
 
+#fill the benefit array
 def play_game(current_object, move, configuration):	
-	#current_object.print_board()
-	#print()
-	
 	current_object.visited[configuration] = 1
 
 	if (detect_player(move) == 1):
-		current_object.benefit[configuration] = 1 #player 1 wins
-		#print(configuration, " 1")
-		#print()
+		current_object.benefit[configuration] = 1
 	else:
-		current_object.benefit[configuration] = 3 #player 2 wins
-		#print(configuration, " 2")
-		#print()
+		current_object.benefit[configuration] = 3
 
 	if (check_end_of_game(current_object) == 1):
-		#print("somebody won")
-		#current_object.print_board()
-		#print()
 		return
 
 	if (move == current_object.get_number_of_rows() * current_object.get_number_of_columns() + 1):
 		current_object.benefit[configuration] = 2 #equality
-		#print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!equality")
-		#current_object.print_board()
 		print()
 
+	#go through all states which derive from the current one
+	#and update the value of benefit
 	for i in range(current_object.no_of_rows):
 		for j in range(current_object.no_of_columns):
 			if (current_object.board[i][j] == 0):
@@ -146,6 +170,7 @@ def play_game(current_object, move, configuration):
 					new_configuration = configuration + current_object.powers_of_3[i * current_object.get_number_of_columns() + j]
 					if current_object.visited[new_configuration] == 0:
 						play_game(current_object, move + 1, new_configuration)
+					#maximize the result
 					current_object.benefit[configuration] = max_between(current_object.benefit[configuration], current_object.benefit[new_configuration])
 					current_object.board[i][j] = 0
 				else:
@@ -153,39 +178,17 @@ def play_game(current_object, move, configuration):
 					new_configuration = configuration + 2 * current_object.powers_of_3[i * current_object.get_number_of_columns() + j]
 					if current_object.visited[new_configuration] == 0:
 						play_game(current_object, move + 1, new_configuration)
+					#minimize the result
 					current_object.benefit[configuration] = min_between(current_object.benefit[configuration], current_object.benefit[new_configuration])
 					current_object.board[i][j] = 0
 
-				'''
-				if (move % 3 == 0):
-					print("print random??????????????????????????????????????????????????")
-					current_object.print_board();
-					print("benefit ", current_object.benefit[configuration])
-					print()
-				'''
+def detect_player(move):
+	if move % 2 == 1:
+		return 1
+	return 2
 
 def check_end_of_game(current_object):
-	"""
-	for i in range(current_object.get_number_of_rows()):
-		for j in range(current_object.get_number_of_columns() - current_object.get_winning_length()):
-			value = current_object.board[i][j]
-			for k in range(current_object.get_winning_length()):
-				if (current_object.board[i][j+k] != value):
-					break
-			if (k == current_object.get_winning_length()):
-				return 1
-
-	for j in range(current_object.get_number_of_columns()):
-		for i in range(current_object.get_number_of_rows() - current_object.get_winning_length()):
-			value = current_object.board[i][j]
-			for k in range(current_object.get_winning_length()):
-				if (current_object.board[i+k][j] != value):
-					break
-			if (k == current_object.get_winning_length()):
-				return 1
-
-	return 0
-	"""
+	#works for 3*3 board
 
 	if (current_object.board[0][0] == 1 and current_object.board[1][1] == 1 and current_object.board[2][2] == 1):
 		return 1
@@ -209,13 +212,19 @@ def check_end_of_game(current_object):
 	return 0
 
 
-def detect_player(move):
-	if move % 2 == 1:
-		return 1
-	return 2
-
-
 c1 = Game(3, 3, 3)
 c1.start_game()
-#c1.print_benefit()
-#c1.print_board()
+print(c1.choose_next_move([1, 2, 1, 0, 0, 0, 0, 0, 0]))
+
+matrix_from_configuration(c1.choose_next_move([1, 2, 0,
+											   1, 0, 0, 
+											   0, 0, 0]))
+print()
+
+matrix_from_configuration(c1.choose_next_move([1, 2, 1,
+											   1, 2, 0, 
+											   0, 0, 0]))
+print()
+matrix_from_configuration(c1.choose_next_move([1, 0, 2,
+											   0, 0, 0, 
+											   1, 1, 2]))
