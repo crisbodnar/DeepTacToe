@@ -1,0 +1,81 @@
+body {
+  text-align: center;
+  font-size: 16px;
+  font-family: Gotham, "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+table {
+  margin-left:auto; 
+  margin-right:auto; 
+  width: 900px; 
+  -webkit-user-select: none;
+  table-layout: fixed;
+}
+
+td {
+  height: 250px;
+  width: 250px;
+  text-align: center;
+  font-size: 100px;
+  border: 2px solid #cccccc;
+  -webkit-border-radius: 10px;
+}
+#players {
+  margin-left:auto; 
+  margin-right:auto;
+  padding: 20px 10px 10px 10px;
+  width: 511px; 
+  text-align: left;
+}
+#players > div {
+  display: inline-block;
+  padding-right: 25px;
+  color: #cccccc;
+  -webkit-transition-duration: 200ms;
+}
+.button {
+  float: right;
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+  padding: 10px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+}
+.back-button {
+  float: left;
+  background-color: #afa8a3;
+  border: none;
+  color: white;
+  padding: 10px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+}
+
+#footer {
+  margin-left:auto; 
+  margin-right:auto;
+  padding: 20px 10px 10px 10px;
+  width: 511px; 
+  text-align: left;
+}
+
+.current-player {
+  color: black !important;
+}
+
+.X-marker {
+  color: #dc685a;
+}
+.X-marker:before {
+  content: "X";
+}
+.O-marker {
+  color: #ecaf4f;
+}
+.O-marker:before {
+  content: "O";
+}
