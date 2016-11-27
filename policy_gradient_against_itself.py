@@ -2,6 +2,7 @@
 Builds and trains a neural network that uses policy gradients to learn to play Tic-Tac-Toe.
 
 Returns a probabilitity over the action space expressing the confidence that that action is the best
+The opponent is playing using the trained function learned previously by playing against a random player
 """
 import functools
 
@@ -20,8 +21,11 @@ NUMBER_OF_GAMES_TO_RUN = 100000
 # to play a different game change this to another spec, e.g TicTacToeXGameSpec or ConnectXGameSpec, to get these to run
 # well may require tuning the hyper parameters a bit
 game_spec = TicTacToeXGameSpec(4, 3)
-
 create_network_func = functools.partial(create_network, game_spec.board_squares(), (300, 200, 100, 100))
+
+
+# compute the opponent function which is using the previously learned weights
+
 
 train_policy_gradients(game_spec, create_network_func, NETWORK_FILE_PATH,
                        number_of_games=NUMBER_OF_GAMES_TO_RUN,
