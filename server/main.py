@@ -1,19 +1,40 @@
-from flask import Flask, render_template, request, jsonify, Response
-import json
+from flask import Flask, render_template, request
+from game import *
 
 app = Flask(__name__)
-
 
 @app.route('/')
 def index():
 	return render_template('index.html')
 
 
-@app.route('/send-network-data', methods=['POST'])
-
-def send_network_data():
+@app.route('/sendNetworkData', methods=['POST'])
+def sendNetworkData():
     callback = request.args.get('callback')
-    return jsonify({'a' : '1'})
+    gBoard = request.get_data()
+    config_array = [0 for x in range(9)]
+    index = 0
+    for i in range(17):
+        if gBoard[i] != 44:
+            print(gBoard[i])
+            if gBoard[i] == 95:
+                config_array[index]=0
+            elif gBoard[i] == 88:
+                config_array[index]=1
+            else:
+                config_array[index]=2
+            print(index, " ", config_array[index])
+            index+=1
+    print(config_array)
+    response = c1.choose_next_move(config_array)
+
+    print(response)
+    if(response >= 0):
+        return str(response)
+    else:
+        return str(-1)
 
 if __name__ == '__main__':
+    c1 = Game(3, 3, 3)
+    c1.start_game()
     app.run(debug = True)
