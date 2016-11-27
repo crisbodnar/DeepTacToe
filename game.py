@@ -79,7 +79,7 @@ class Game:
 		current_state = matrix_from_array(config_array)
 		configuration = configuration_from_array(config_array)
 		best_configuration = 19682
-		best_value = 3
+		best_value = 10
 
 		for i in range(3):
 			for j in range(3):
@@ -151,15 +151,15 @@ def play_game(current_game, move, configuration):
 	current_game.visited[configuration] = 1
 
 	if (detect_player(move) == 1):
-		current_game.benefit[configuration] = 1
+		current_game.benefit[configuration] = -1
 	else:
-		current_game.benefit[configuration] = 3
+		current_game.benefit[configuration] = 1
 
-	if (check_end_of_game(current_game) == 1):
+	if is_end_of_game(current_game):
 		return
 
 	if (move == 10):
-		current_game.benefit[configuration] = 2 #equality
+		current_game.benefit[configuration] = 0 #equality
 		return
 
 	#go through all states which derive from the current one
@@ -190,37 +190,35 @@ def detect_player(move):
 	else:
 		return 2
 
-def check_end_of_game(current_game):
+def is_end_of_game(current_game):
 	#works for 3*3 board
 
 	if (current_game.board[0][0] == 1 and current_game.board[1][1] == 1 and current_game.board[2][2] == 1):
-		return 1
+		return True
 	if (current_game.board[2][0] == 1 and current_game.board[1][1] == 1 and current_game.board[0][2] == 1):
-		return 1
+		return True
 	if (current_game.board[0][0] == 2 and current_game.board[1][1] == 2 and current_game.board[2][2] == 2):
-		return 1
+		return True
 	if (current_game.board[2][0] == 2 and current_game.board[1][1] == 2 and current_game.board[0][2] == 2):
-		return 1
+		return True
 
 	for i in range(3):
 		if(current_game.board[i][0] == 1 and current_game.board[i][1] == 1 and current_game.board[i][2] == 1):
-			return 1
+			return True
 		if(current_game.board[0][i] == 1 and current_game.board[1][i] == 1 and current_game.board[2][i] == 1): 
-			return 1
+			return True
 		if(current_game.board[i][0] == 2 and current_game.board[i][1] == 2 and current_game.board[i][2] == 2): 
-			return 1
+			return True
 		if(current_game.board[0][i] == 2 and current_game.board[1][i] == 2 and current_game.board[2][i] == 2): 
-			return 1
+			return True
 
-	return 0
+	return False
 
 
 c1 = Game(3, 3, 3)
 c1.start_game()
 
 """
-print(c1.choose_next_move([1, 2, 1, 0, 0, 0, 0, 0, 0]))
-
 matrix_from_configuration(c1.choose_next_move([1, 2, 0,
 											   1, 0, 0, 
 											   0, 0, 0]))
