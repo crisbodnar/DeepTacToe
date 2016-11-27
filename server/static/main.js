@@ -63,16 +63,17 @@ function squareSelected(square, currentPlayer) {
     fillSquareWithMarker(square, currentPlayer);
     updateBoard(square.id, currentPlayer);
     checkForWinner();
-    var gameBoard = JSON.stringify(board);
+    var gameBoard = { boardID : JSON.stringify(board) };
       $.ajax({
         type: 'POST',
-        url: 'localhost:5000/send-network-data',
-        dataType: 'jsonp',
-        data: { 'gameBoard' : gameBoard },
+        url: '/sendNetworkData',
+        dataType: 'json',
+        jsonp: 'jsonp_callback',
+        data: gameBoard,
         success: function(result) {
-          console.log("Success");
-          console.log(result);
-          square_id = result.response;
+          square_id = result;
+          console.log(board);
+          console.log(gameBoard);
           squareSelectedByNetwork(square_id);
         },
         error: function(err) {
@@ -95,10 +96,7 @@ function squareSelectedByNetwork(square_id){
 
 /*** create an X or O div and append it to the square ***/
 function fillSquareWithMarker(square, player) {
-  var marker = document.createElement('div');
-  /* set the class name on the new div to X-marker or O-marker, depending on the current player */
-  marker.className = player + "-marker";
-  square.appendChild(marker);
+  square.className = player + "-marker";
 }
 
 /*** update our array which tracks the state of the board, and write the current state to local storage ***/
