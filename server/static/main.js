@@ -1,11 +1,15 @@
 "use strict";
 
+
+var lungime = 7;
+
 /***************************************/
 /*         intial setup                */
 /***************************************/
-var board = new Array(9);
+var board = new Array(lungime*lungime);
 
 function init() {
+  generate_html(lungime);
   newGame();
   /* use touch events if they're supported, otherwise use mouse events */
   var down = "mousedown"; var up = "mouseup";
@@ -24,7 +28,18 @@ function init() {
   createBoard();
   setInitialPlayer();
 }
-
+function generate_html(x){
+    var MyTable = '<table>';
+    for(var i=0; i<x;i++){
+        MyTable += '<tr>';
+        for(var j=0;j<x;j++){
+            MyTable += '<td id="'; MyTable+= (x*i+j); MyTable+= '">';
+        }
+        MyTable += '</tr>';
+    }
+    MyTable += '</table>';
+    document.getElementById("thatdiv").innerHTML+= MyTable;
+}
 
 /****************************************************************************************/
 /* creating or restoring a game board, adding Xs and Os to the board, saving game state */
@@ -66,7 +81,7 @@ function squareSelected(square, currentPlayer) {
     var square_id;
     fillSquareWithMarker(square, currentPlayer);
     updateBoard(square.id, currentPlayer);
-    checkForWinner();
+    checkForWinner2();
       $.ajax({
         type: 'POST',
         url: '/sendNetworkData',
@@ -80,7 +95,7 @@ function squareSelected(square, currentPlayer) {
         },
         error: function(err) {
           console.log(board.toString());
-          console.log("Error")
+          console.log("Error");
           console.log(err);
         }
       });
@@ -96,7 +111,7 @@ function squareSelectedByNetwork(square_id){
     var currentPlayer = getCurrentPlayer();
     fillSquareWithMarker(square, currentPlayer);
     updateBoard(square.id, currentPlayer);
-    checkForWinner();
+    checkForWinner2();
     switchPlayers();
 }
 
@@ -233,4 +248,29 @@ function newGame() {
 
 
 
+//noile functii de verificare a victoriei
 
+function checkForWinner2(){
+    $.ajax({
+        type: 'POST',
+        url: '/checkWinner',
+        jsonp: 'jsonp_callback',
+        data: board.toString(),
+        success: function(result) {
+            if(result != '0'){
+                if(result == '1')
+                    alert("X won!");
+                else
+                    alert("O won!");
+                setTimeout(function(){
+                newGame();
+                }, 500);
+            }
+        },
+        error: function(err) {
+          console.log(board.toString());
+          console.log("Error");
+          console.log(err);
+        }
+      });
+}
